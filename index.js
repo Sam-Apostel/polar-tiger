@@ -6,18 +6,15 @@ const {
 	mirror
 } = jscad.transforms;
 
-const { offset } = jscad.expansions;
 const { extrudeLinear, extrudeFromSlices } = jscad.extrusions;
-const { polygon, cuboid, cylinder, cylinderElliptic, rectangle, circle } = jscad.primitives;
+const { cuboid, cylinder, cylinderElliptic, rectangle, circle } = jscad.primitives;
 const { colorize } = jscad.colors;
 const { union, subtract, intersect } = jscad.booleans;
 const { hull } = jscad.hulls;
-const { degToRad, radToDeg } = jscad.utils;
 
 require("./utils/extensions");
-const { myCylinder } = require('./utils');
 const { PULLEYS } = require('./configs/pulleys');
-const { BOLT_TYPES, getBolt, getSocketScrew } = require('./parts/bolts');
+const { BOLT_TYPES, getBolt } = require('./parts/bolts');
 const { getExtrusion } = require("./parts/extrusions");
 
 
@@ -25,7 +22,6 @@ const { getExtrusion } = require("./parts/extrusions");
 const tools = require('./tools/index.js');
 const {getCarriage} = require("./prints/carriage");
 // const mainBoard = require('./STLs/BTT_octopus_board.stl');
-const {getVWheel} = require("./parts/wheels/vWheels");
 const {getIdlerNegative, getIdler} = require("./parts/wheels/indlers");
 const {getPulley} = require("./parts/wheels/pulleys");
 const {BELT_DETAIL} = require("./rendering");
