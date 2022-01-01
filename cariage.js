@@ -8,7 +8,7 @@ const { main: v1 } = require("./index");
 
 const vWheelColors = [
 	[.8, .8, .8, .9], // wheel
-	[.2, .2, .2], // bolt
+	[.8, .8, .8], // bolt
 	// [.7, .7, .7], // spacer
 	[.3, .3, .3], // nut
 ];
@@ -35,7 +35,7 @@ const colors = [
 ];
 
 const main = () => {
-	const spacing = 1;
+	const spacing = 3;
 	const axisCenter = 10 + spacing / 2;
 	const wheelPositions = [
 		{ translation: [-45, -axisCenter, -20], rotation: -1.5707963267948966 },

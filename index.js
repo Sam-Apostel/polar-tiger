@@ -538,7 +538,7 @@ const main = props => {
 	const wheelRadius = 11.945;
 	const beltSize = { thickness: 1.38, width: 5 };
 
-	const axisSpacing = 1;
+	const axisSpacing = 2;
 
 	const wheelAxialOffset = (xAxis.depth + axisSpacing) / 2;
 
@@ -704,7 +704,9 @@ const main = props => {
 	];
 	const carriageColors = [
 		...carriageWheelColors,
-		[1, .55, .2], // [.7, .7, .7], // carriage
+		[1, .55, .2], // [.7, .7, .7], // carriage top?
+		[1, .55, .2], // [.7, .7, .7], // carriage bottom?
+		[1, .55, .2], // [.7, .7, .7], // carriage front
 		// [1, .55, .2], // tool holder end
 		// [.15, .15, .15], // tool holder center
 		// [.15, .15, .15], // tool holder top
@@ -780,7 +782,7 @@ const main = props => {
 			rotateZ(Math.PI * 2 / amountOfArms * index, [
 				translate([carriagePosition.x, zAxisCenterY, 0], getZAxis(height, offSetIdlers, zAxis, motorPositions)),
 				idlers,
-				translate([carriagePosition.x, carriagePosition.y, carriagePosition.z + zPos], getCarriage(wheelPositions, 1)),
+				translate([carriagePosition.x, carriagePosition.y, carriagePosition.z + zPos], getCarriage(wheelPositions, axisSpacing)),
 				translate([xPos - width, xAxisCenterY, carriagePosition.z + zPos], getXAxis(width, xAxis, tool)),
 				// translate([0, zAxisCenterY + 20, 20], rotateY(Math.PI / 2, getExtrusion(249, 20, 40))),
 				belts,

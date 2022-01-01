@@ -1,8 +1,8 @@
 const jscad = require('@jscad/modeling');
-const {myCylinder} = require("../../utils/geometry");
+const { myCylinder } = require("../../utils/geometry");
 const { translateZ } = jscad.transforms;
 const { cylinder } = jscad.primitives;
-const { union } = jscad.booleans;
+const { union, subtract } = jscad.booleans;
 
 
 const BOLT_TYPES = {
@@ -19,12 +19,23 @@ const getBolt = (diameter, length, head = false) => {
 	);
 };
 
-const getSocketScrew = (diameter, length, head = false) => {
+const getSocketScrew = (diameter, length, head = false, negative) => {
 	if (!head) return cylinder({radius: diameter / 2, height: length});
 
+	if (negative) {
+		return union(
+			getBolt(diameter, length),
+			translateZ( -(length - head.height) / 2,
+				myCylinder(head.height, head.diameter / 2, (head.smallDiameter || head.diameter) / 2)
+			)
+		);
+	}
 	return union(
-		getBolt(diameter, length),
-		translateZ(  -(length - head.height) / 2, myCylinder(head.height, head.diameter / 2, (head.smallDiameter || head.diameter) / 2)),
+		translateZ(2.5 / 2, getBolt(diameter, length - 2.5)),
+		translateZ(  -(length - head.height) / 2, subtract(
+			myCylinder(head.height, head.diameter / 2, (head.smallDiameter || head.diameter) / 2),
+			cylinder({radius: 3 / 2, height: 2.5, segments: 6, center: [0,0, -(head.height - 2.5) / 2]}),
+		)),
 	);
 };
 

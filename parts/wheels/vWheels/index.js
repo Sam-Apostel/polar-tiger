@@ -1,12 +1,11 @@
 const jscad = require('@jscad/modeling');
-const { getBolt } = require("../../bolts");
-const { BOLT_TYPES } = require("../../bolts");
+const { getBolt, getSocketScrew, BOLT_TYPES } = require("../../bolts");
 const { myCylinder } = require("../../../utils/geometry");
 const { translateZ, rotateZ, rotateX } = jscad.transforms;
-const { union } = jscad.booleans;
+const { union, subtract } = jscad.booleans;
 const { cylinder } = jscad.primitives;
 
-const getVWheel = (boltLength) => {
+const getVWheel = (boltLength, boltPosition, negative) => {
 	// const bigWidth = 10.23;
 	const bigWidth = 11;
 	const smallWidth =  5.89;
@@ -22,19 +21,25 @@ const getVWheel = (boltLength) => {
 	);
 
 	const nutSize = 3.2;
-	const nut = cylinder({radius: 4.5, height: nutSize + 1 + 1, segments: 6});
+	const nut = negative
+		? cylinder({radius: 4.5, height: nutSize + 2, segments: 6})
+		: subtract(
+			cylinder({radius: 4.5, height: nutSize, segments: 6}),
+			cylinder({radius: (BOLT_TYPES.M5 + .4) / 2 , height: nutSize, segments: 32}),
+		);
 
-	const bolt = rotateX(Math.PI, getBolt(BOLT_TYPES.M5 + .4, boltLength, { diameter: 8.5, height: 5 }));
+	// const bolt = rotateX(Math.PI, getBolt(BOLT_TYPES.M5 + .4, boltLength, { diameter: 8.5, height: 5 }));
+	const bolt =  getSocketScrew(BOLT_TYPES.M5 + .4, boltLength, {diameter: 9.7, height: 3.6, smallDiameter: 4.7}, negative);
 
-	return [
+	return rotateX(Math.PI, [
 		wheelOutside,
-		...translateZ(2,
+		...translateZ(1.5,
 			[
-				translateZ(0, bolt),
-				translateZ((boltLength - nutSize + 1 - 1) / 2, nut),
+				translateZ(boltPosition, bolt),
+				translateZ((boltLength - nutSize + (negative ? 2 : 0)) / 2 + boltPosition, nut),
 			]
 		)
-	];
+	]);
 };
 
 
