@@ -69,7 +69,7 @@ const main = () => {
 
 	return [
 		translate([-left - size.x / 2, -back + size.y / 2, -bottom], oriented),
-		fan,
+		...fan,
 		mountBlock,
 	].map((object, index) => colorize(colors[index] || [.0, .0, .0,], object));
 };
