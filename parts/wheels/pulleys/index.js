@@ -6,8 +6,7 @@ const { translateZ, translateX, rotateY, rotateZ} = jscad.transforms;
 const { union, subtract } = jscad.booleans;
 const { cylinder, cuboid } = jscad.primitives;
 
-const getPulley = size => {
-	// console.log('pulley size: ', size);
+const getPulley = ({ teeth, od: size }) => {
 	const smallWidth = 5.4;
 	const brimWidth = .5;
 	const bigWidth = smallWidth + ( brimWidth * 2 );
@@ -15,9 +14,8 @@ const getPulley = size => {
 	const bigRadius = smallRadius + 1.38;
 	const wheelInside = myCylinder(bigWidth, BOLT_TYPES.M5 / 2 + .3)
 	const pit = cylinder({ radius: .7, height: smallWidth, center: [smallRadius + .555, 0, 0]});
-	const tooth = 45;
-	const pitch = Math.PI * 2 / tooth;
-	const pits = [...new Array(tooth)].map((_, index) => rotateZ(pitch * index, pit));
+	const pitch = Math.PI * 2 / teeth;
+	const pits = [...new Array(teeth)].map((_, index) => rotateZ(pitch * index, pit));
 
 	const wheelOutside = subtract(
 		union(

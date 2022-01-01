@@ -22,7 +22,7 @@ const { getExtrusion } = require("./parts/extrusions");
 const tools = require('./tools/index.js');
 const {getCarriage} = require("./prints/carriage");
 // const mainBoard = require('./STLs/BTT_octopus_board.stl');
-const {getIdlerNegative, getIdler} = require("./parts/wheels/indlers");
+const {getIdlerNegative, getIdler} = require("./parts/wheels/idlers");
 const {getPulley} = require("./parts/wheels/pulleys");
 const {BELT_DETAIL} = require("./rendering");
 
@@ -499,9 +499,13 @@ const zAxi = {
 		width: 40,
 		depth: 20,
 		// beltOffset: [3, 0],
-		beltOffset: [10, 8],
+		// beltOffset: [10, 8],
+		// beltOffset: [19, 17],
+
+		beltOffset: [13, 17],
+		// pulley: PULLEYS[60],
+
 		threads: [{ x: -10 , y: 0 }, { x: 10 , y: 0 }],
-		pulley: PULLEYS[40],
 		bedClearance: 0
 	},
 	2060: {
@@ -621,8 +625,11 @@ const main = props => {
 		const pulleyPosition = 15;
 
 		const diameter = vec2.length(diagonal) - beltSize.thickness;
+		const pulley = zAxis.pulley ?? PULLEYS.fromOd(diameter);
+		console.log({ pulley, diameter });
+
 		return [
-			translate(center, rotateZ(motorRotation, translateY(-45 / 2 -  pulleyPosition, rotateX(-Math.PI / 2, getNema17WithPulley(diameter, pulleyPosition))))),
+			translate(center, rotateZ(motorRotation, translateY(-45 / 2 -  pulleyPosition, rotateX(-Math.PI / 2, getNema17WithPulley(pulley, pulleyPosition))))),
 			{ translation: center, rotation: motorRotation, radius: diameter / 2 }
 		];
 	};
