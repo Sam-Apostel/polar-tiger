@@ -1,11 +1,11 @@
 const jscad = require('@jscad/modeling');
-const { translate, rotateX, translateZ, translateY, rotateZ } = jscad.transforms;
+const { translate, rotateX, translateZ, translateY } = jscad.transforms;
 const { subtract, union, intersect } = jscad.booleans;
 const { polygon, ellipse, rectangle, roundedCuboid, cuboid } = jscad.primitives;
 const { offset } = jscad.expansions;
 const { extrudeLinear, extrudeRotate } = jscad.extrusions;
 
-const { getVWheel } = require("../../parts/wheels/vWheels");
+const { getVWheel } = require("../parts/wheels/vWheels");
 
 const getCarriage = (wheelPositions, axisSpacing) => {
 	const plateThickness = 7;
@@ -35,8 +35,8 @@ const getCarriage = (wheelPositions, axisSpacing) => {
 
 	const negative = union(
 		...negativeWheels,
-		roundedCuboid({ size: [110, 20 + extrusionSpacing, 20 + extrusionSpacing], center: [0, -10 - axisSpacing / 2, 0], roundRadius: 3, segments: 16 }),
-		roundedCuboid({ size: [40 + extrusionSpacing, 20 + extrusionSpacing, 110], center: [0, 10 + axisSpacing / 2, 0], roundRadius: 3, segments: 16 }),
+		roundedCuboid({ size: [200, 20 + extrusionSpacing, 20 + extrusionSpacing], center: [0, -10 - axisSpacing / 2, 0], roundRadius: 3, segments: 16 }),
+		roundedCuboid({ size: [40 + extrusionSpacing, 20 + extrusionSpacing, 200], center: [0, 10 + axisSpacing / 2, 0], roundRadius: 3, segments: 16 }),
 	);
 
 	const wheelNubContactRadius = 4.5;
@@ -96,14 +96,13 @@ const getCarriage = (wheelPositions, axisSpacing) => {
 	const xPlate = getPlate(xWheel, -extrusionDepth - axisSpacing, 2);
 
 	const zBlock = union(middlePlate, zPlate);
-	const seperator = translateZ(100, cuboid({ size: [200, 200, 200] }));
-	const zBlockTop = intersect(zBlock, seperator);
-	const zBlockBottom = subtract(zBlock, seperator);
+	// const seperator = translateZ(100, cuboid({ size: [200, 200, 200] }));
+	// const zBlockTop = intersect(zBlock, seperator);
+	// const zBlockBottom = subtract(zBlock, seperator);
 
 	return [
 		wheels,
-		translateZ(0, zBlockTop),
-		zBlockBottom,
+		zBlock,
 		xPlate,
 	];
 };

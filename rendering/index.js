@@ -1,4 +1,4 @@
-const BELT_DETAIL = 1; // a section every mm
+const BELT_DETAIL = 4; // a section every mm
 
 module.exports = {
 	BELT_DETAIL

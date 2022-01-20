@@ -28,15 +28,24 @@ const getVWheel = (boltLength, boltPosition, negative) => {
 			cylinder({radius: (BOLT_TYPES.M5 + .4) / 2 , height: nutSize, segments: 32}),
 		);
 
+	const heatedInsetSize = 9.5
+	const heatedInsert = negative
+		? cylinder({ radius: 3.1, height: heatedInsetSize })
+		: subtract(
+			cylinder({ radius: 3.1, height: heatedInsetSize }),
+			cylinder({radius: (BOLT_TYPES.M5 + .4) / 2 , height: heatedInsetSize, segments: 32})
+		);
+
 	// const bolt = rotateX(Math.PI, getBolt(BOLT_TYPES.M5 + .4, boltLength, { diameter: 8.5, height: 5 }));
-	const bolt =  getSocketScrew(BOLT_TYPES.M5 + .4, boltLength, {diameter: 9.7, height: 3.6, smallDiameter: 4.7}, negative);
+	const bolt = getSocketScrew(BOLT_TYPES.M5 + .4, boltLength, {diameter: 9.7, height: 3.6, smallDiameter: 4.7}, negative);
 
 	return rotateX(Math.PI, [
 		wheelOutside,
 		...translateZ(1.5,
 			[
 				translateZ(boltPosition, bolt),
-				translateZ((boltLength - nutSize + (negative ? 2 : 0)) / 2 + boltPosition, nut),
+				// translateZ((boltLength - nutSize + (negative ? 2 : 0)) / 2 + boltPosition, nut),
+				translateZ((boltLength - heatedInsetSize + (negative ? 2 : 0)) / 2 + boltPosition, heatedInsert),
 			]
 		)
 	]);

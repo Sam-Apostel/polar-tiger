@@ -1,19 +1,18 @@
 const jscad = require('@jscad/modeling');
 const {getBolt} = require("../../bolts");
 const {myCylinder} = require("../../../utils/geometry");
-const { translateZ } = jscad.transforms;
+const { translateZ, rotateX } = jscad.transforms;
 const { union, subtract } = jscad.booleans;
 const { cylinder } = jscad.primitives;
 
-
+const smallWidth =  5.4;
+const brimWidth = .5;
 const getIdler = (boltLength, size) => {
-	const smallWidth =  5.4;
-	const brimWidth = .5;
 	const bigWidth = smallWidth + ( brimWidth * 2 );
 	const smallRadius = size / 2;
-	const bigRadius = smallRadius + 1
-	const bearing = cylinder({ height: bigWidth - 1.7, radius: 16.35 / 2, center: [0, 0, 1.7 / 2] });
-	const wheelInside = cylinder({ height: bigWidth, radius: 13 / 2 });
+	const bigRadius = smallRadius + 1.38
+	const bearing = cylinder({ height: 5, radius: 16.35 / 2, center: [0, 0, 1.7 / -2] });
+	const wheelInside = cylinder({ height: bigWidth, radius: 9 / 2 });
 
 	const wheelOutside = union(
 		translateZ(-(bigWidth - brimWidth) / 2, myCylinder(brimWidth, bigRadius)),
@@ -28,13 +27,11 @@ const getIdler = (boltLength, size) => {
 
 	return [
 		idler,
-		getBolt(4.65, boltLength)
+		translateZ((boltLength - bigWidth) / 2, rotateX(Math.PI, getBolt(4.89, boltLength, { diameter: 8.48, height: 5})))
 	];
 };
 
 const getIdlerNegative = (boltLength, size) => {
-	const smallWidth =  5.4;
-	const brimWidth = .5;
 	const bigWidth = smallWidth + ( brimWidth * 2 ) + 2;
 	const smallRadius = (size + 2) / 2;
 
@@ -47,7 +44,7 @@ const getIdlerNegative = (boltLength, size) => {
 
 	return [
 		wheelOutside,
-		getBolt(5, boltLength)
+		translateZ((boltLength - bigWidth) / 2, getBolt(5, boltLength))
 	];
 };
 

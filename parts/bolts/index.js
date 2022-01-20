@@ -7,6 +7,7 @@ const { union, subtract } = jscad.booleans;
 
 const BOLT_TYPES = {
 	M5: 5,
+	M4: 4,
 	M3: 3
 };
 
