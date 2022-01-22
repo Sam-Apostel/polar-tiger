@@ -8,13 +8,14 @@ const { extrudeLinear, extrudeRotate } = jscad.extrusions;
 const { getVWheel } = require("../parts/wheels/vWheels");
 
 const getCarriage = (wheelPositions, axisSpacing) => {
-	const plateThickness = 7;
+	const plateThickness = 6;
 	const extrusionSpacing = 2;
+	const boltLength = 20;
 
-	const wheel = getVWheel(30, -((plateThickness - 4.5) + (axisSpacing - 2.5)) / 2);
-	const altWheel = getVWheel(30, -((plateThickness - 4.5) + (axisSpacing - 2.5)) / 2 + (plateThickness - axisSpacing + extrusionSpacing) / 2);
-	const negativeWheel = getVWheel(30, -((plateThickness - 4.5) + (axisSpacing - 2.5)) / 2, true);
-	const negativeAltWheel = getVWheel(30, -((plateThickness - 4.5) + (axisSpacing - 2.5)) / 2 + (plateThickness - axisSpacing + extrusionSpacing) / 2, true);
+	const wheel = getVWheel(boltLength, -((plateThickness - 4.5) + (axisSpacing - 2.5)) / 2);
+	const altWheel = getVWheel(boltLength, -((plateThickness - 4.5) + (axisSpacing - 2.5)) / 2 - 1.5);
+	const negativeWheel = getVWheel(boltLength, -((plateThickness - 4.5) + (axisSpacing - 2.5)) / 2, true);
+	const negativeAltWheel = getVWheel(boltLength, -((plateThickness - 4.5) + (axisSpacing - 2.5)) / 2 - 1.5, true);
 
 	const wheels = wheelPositions.map(({ translation, rotation }, index) => translate(translation, rotateX(rotation, index === 2 ? altWheel : wheel )));
 	const negativeWheels = wheelPositions.map(({ translation, rotation }, index) => translate(translation, rotateX(rotation, index === 2 ? negativeAltWheel : negativeWheel )));

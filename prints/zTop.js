@@ -38,3 +38,5 @@ const getZTopIdler = (height, offsetIdlers, zAxisProfile) => {
 module.exports = {
 	getZTopIdler
 }
+
+// TODO: add bearing slot

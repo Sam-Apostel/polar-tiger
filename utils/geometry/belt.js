@@ -4,55 +4,58 @@ const { extrudeFromSlices } = jscad.extrusions;
 const { cylinderElliptic, rectangle } = jscad.primitives;
 const { translate, rotateX, rotate } = jscad.transforms;
 const { subtract } = jscad.booleans;
-const {BELT_DETAIL} = require('../../rendering');
+const { BELT_DETAIL } = require('../../rendering');
 
+const gt2_5mm = { thickness: 1.38, width: 5 };
 
-/**
- * make a belt that spans between wheels
- * @param joints is an array of wheels that the belt revolves around
- * a joint has a position, rotation and radius
- * for the first and last joint the radius can be zero ( straight terminating )
- * we assume that the belts run straight in one dimension
- */
-const getBelt = joints => {
-	const getTangentIntersections = (a, b) => {
-		// figure out what direction the tangent runs in
-
-		// add radius to position, in the perpendicular axis of the tangent
-		return [
-			null, // coord of intersection between (tangent of a and b) and a
-			null // coord of intersection between (tangent of a and b) and b
-		];
-	}
-
-	// expand joints with coords of intersections between tangent of 2 joints
-	const interfaces = joints.reduce((interfaces, joint, index) => {
-		if (index === 0) return [joint];
-		const prev = interfaces.pop();
-		const [a, b] = getTangentIntersections(prev, joint);
-		return [
-			...interfaces,
-			{
-				...prev,
-				exit: a
-			},
-			{
-				...joint,
-				entry: b,
-			}
-		];
-	}, []);
-
-	// generate radius for each joint
-	// generate sections between each joint;
-
-};
+// /**
+//  * make a belt that spans between wheels
+//  * @param joints is an array of wheels that the belt revolves around
+//  * a joint has a position, rotation and radius
+//  * for the first and last joint the radius can be zero ( straight terminating )
+//  * we assume that the belts run straight in one dimension
+//  */
+// const getBelt = joints => {
+// 	const getTangentIntersections = (a, b) => {
+// 		// figure out what direction the tangent runs in
+//
+// 		// add radius to position, in the perpendicular axis of the tangent
+// 		return [
+// 			null, // coord of intersection between (tangent of a and b) and a
+// 			null // coord of intersection between (tangent of a and b) and b
+// 		];
+// 	}
+//
+// 	// expand joints with coords of intersections between tangent of 2 joints
+// 	const interfaces = joints.reduce((interfaces, joint, index) => {
+// 		if (index === 0) return [joint];
+// 		const prev = interfaces.pop();
+// 		const [a, b] = getTangentIntersections(prev, joint);
+// 		return [
+// 			...interfaces,
+// 			{
+// 				...prev,
+// 				exit: a
+// 			},
+// 			{
+// 				...joint,
+// 				entry: b,
+// 			}
+// 		];
+// 	}, []);
+//
+// 	// generate radius for each joint
+// 	// generate sections between each joint;
+//
+// };
 
 const getBeltRadius = (radius, startAngle, endAngle) => {
-	const radiusToElliptic = rad => ({startRadius: [rad, rad], endRadius: [rad, rad]});
+	const radiusToElliptic = rad => {
+		return ({startRadius: [rad, rad], endRadius: [rad, rad]});
+	}
 	return rotateX(Math.PI / 2, subtract(
-		cylinderElliptic({...radiusToElliptic(radius + 1.38), height: 5, startAngle, endAngle}),
-		cylinderElliptic({...radiusToElliptic(radius), height: 5, startAngle, endAngle}),
+		cylinderElliptic({...radiusToElliptic(radius + gt2_5mm.thickness), height: gt2_5mm.width, startAngle, endAngle}),
+		cylinderElliptic({...radiusToElliptic(radius), height: gt2_5mm.width, startAngle, endAngle}),
 	));
 	// TODO: add belt hobs
 };
@@ -97,7 +100,7 @@ const getBeltSection = (startPos, startRot, endPos, endRot) => {
 			return { edges };
 		}
 		// TODO: add belt hobs
-	}, rectangle({size: [1.38, 5]}));
+	}, rectangle({size: [gt2_5mm.thickness, gt2_5mm.width]}));
 
 	// rotate section to point back where it pointed
 	return translate(startPos, rotate(angles, section));
@@ -105,5 +108,6 @@ const getBeltSection = (startPos, startRot, endPos, endRot) => {
 
 module.exports = {
 	getBeltSection,
-	getBeltRadius
+	getBeltRadius,
+	beltSize: gt2_5mm
 }

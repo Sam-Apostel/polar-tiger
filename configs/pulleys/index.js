@@ -1,3 +1,5 @@
+const { beltSize } = require('../../utils/geometry/belt');
+
 const fromTeeth = (teeth) => {
 	// result on affine interpolation on known sets of teeth & od combos represented as standard above
 	const a = 0.6697;
@@ -6,6 +8,7 @@ const fromTeeth = (teeth) => {
 
 	return { teeth, od };
 };
+
 const PULLEYS = {
 	16: {
 		teeth: 16,
@@ -29,7 +32,8 @@ const PULLEYS = {
 	// },
 	60: {
 		teeth: 60,
-		od: 42,
+		od: 37.85,
+		beltOffset: (39.2 - beltSize.thickness) / 2
 	},
 	fromTeeth,
 	fromOd: (od) => {

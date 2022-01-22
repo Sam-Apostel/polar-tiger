@@ -2,8 +2,8 @@ const jscad = require('@jscad/modeling');
 const { translate, rotateY, translateZ } = jscad.transforms;
 const { colorize } = jscad.colors;
 
-const {getExtrusion} = require("./parts/extrusions");
-const {getCarriage} = require("./prints/carriage");
+const { getExtrusion } = require("./parts/extrusions");
+const { getCarriage } = require("./prints/carriage/carriage");
 const { main: v1 } = require("./index");
 
 const vWheelColors = [

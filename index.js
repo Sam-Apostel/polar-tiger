@@ -1,7 +1,7 @@
 const jscad = require('@jscad/modeling');
 const { vec2 } = jscad.maths;
 const {
-	translate, translateZ, translateX, translateY,
+	translate, translateZ, translateY,
 	rotateZ, rotateY, rotateX,
 } = jscad.transforms;
 
@@ -16,11 +16,11 @@ const { getExtrusion } = require("./parts/extrusions");
 const tools = require('./tools/index.js');
 const { getCarriage } = require("./prints/carriage");
 const { getIdlerNegative, getIdler } = require("./parts/wheels/idlers");
-const { getPulley, pulleyWidth} = require("./parts/wheels/pulleys");
-const { getBeltSection, getBeltRadius } = require('./utils/geometry/belt');
-const { getNema17, nema17Width, nema17dimensions} = require('./parts/electronics/motors');
+const { getPulley } = require("./parts/wheels/pulleys");
+const { getBeltSection, getBeltRadius, beltSize } = require('./utils/geometry/belt');
+const { getNema17, nema17Width} = require('./parts/electronics/motors');
 const { getZTopIdler } = require('./prints/zTop');
-const { getMotorBracket, motorBracketThickness } = require('./prints/zBottom');
+const { getMotorBracket } = require('./prints/zBottom');
 const { getElectronics } = require('./parts/electronics/controlBox');
 const { getBolt, BOLT_TYPES, getSocketScrew} = require('./parts/bolts');
 
@@ -34,10 +34,10 @@ const getNema17WithPulley = (pulleySize, pulleyPosition) => {
 	];
 };
 
-const getZAxis = (height, offsetIdlers, zAxisProfile, motorPositions, zTopHeight, distanceToPSU) => {
+const getZAxis = (height, offsetIdlers, zAxisProfile, motorPositions, zTopHeight, distanceToPSU, PSUPlateThickness) => {
 	const zAxis = getExtrusion(height, zAxisProfile.depth, zAxisProfile.width);
 	const topBracket = getZTopIdler(zTopHeight, translateZ(-((zTopHeight / 2) + height), offsetIdlers), zAxisProfile);
-	const bottomBracket = getMotorBracket(motorPositions, distanceToPSU, zAxisProfile);
+	const bottomBracket = getMotorBracket(motorPositions, distanceToPSU, zAxisProfile, PSUPlateThickness);
 	return [
 		bottomBracket,
 		zAxis,
@@ -201,10 +201,10 @@ const getRotaryHub = (rotation, motorPlane, {radius, height, center}, joints, zA
 	const motorRotation = .65;
 	return translate([center.x, center.y, 0], [
 		rotateZ(motorRotation, translate([bearingSize.outer + gearSize.ring.thickness + gearSize.radius, 0, 0], rotateZ(-motorRotation, motor))),
-		subtract(base, baseFlapCutter),
+		// subtract(base, baseFlapCutter),
 		translateZ(center.z, bedBearing),
-		translateZ(center.z, buildPlate),
-		baseFlap,
+		// translateZ(center.z, buildPlate),
+		// baseFlap,
 	]);
 }
 
@@ -267,10 +267,13 @@ const zAxi = {
 		// beltOffset: [13, 17],
 		beltOffset: [22, 18],
 		pulley: PULLEYS[60],
+		// pulleyAngle: 15,
+		beltYOffset: PULLEYS[60].beltOffset * 2 - .4,
 
 		threads: [{ x: -10 , y: 0 }, { x: 10 , y: 0 }],
 		bedClearance: 15,
-		bottomClearance: 25,
+		// bottomClearance: 25,
+		bottomClearance: 15,
 		xAxis: {
 			extraLength: 15,
 		}
@@ -284,7 +287,7 @@ const zAxi = {
 		bedClearance: 0
 	}
 }
-const beltSize = { thickness: 1.38, width: 5 };
+
 
 const main = props => {
 	const {
@@ -294,13 +297,14 @@ const main = props => {
 		delta,
 		z,
 	} = props;
+
 	const xAxis = xAxi[2020];
 	const zAxis = zAxi[2040];
 	const tool = tools.hotEnds.microswiss.endCap;
 
 	const wheelRadius = 11.945;
 
-	const axisSpacing = 2;
+	const axisSpacing = 1;
 
 	const wheelAxialOffset = (xAxis.depth + axisSpacing) / 2;
 	const buildPlate = { radius, height: 4, center: { x: 0, y: 0, z: 8 + 4 + nema17Width + zAxis.bottomClearance } }
@@ -311,7 +315,7 @@ const main = props => {
 	const carriageSize = {x: zAxis.width, z: xAxis.width};
 
 	const wheelRadialOffset = 10;
-	const xWheelSpread = 100;
+	const xWheelSpread = 95;
 	const zWheelSpread = 80;
 	const zWheelOffset = 20;
 	const width = buildPlate.radius + xWheelSpread + wheelRadius - tool.mount.x + zAxis.bedClearance + zAxis.xAxis.extraLength;
@@ -369,11 +373,19 @@ const main = props => {
 			left: [xWheels.top[0] - wheelRadius - beltSize.thickness / 2 + carriagePosition.x, xAxisCenterY],
 			right: [xWheels.top[0] + wheelRadius + beltSize.thickness / 2 + carriagePosition.x, xAxisCenterY],
 		},
-		back: {
-			left: [carriagePosition.x - zAxis.beltOffset[0], zAxisCenterY + zAxis.beltOffset[1]],
-			right: [carriagePosition.x + zAxis.beltOffset[0], zAxisCenterY + zAxis.beltOffset[1]],
-		}
 	};
+
+	// equal sized pulleys on top and bottom
+	joints.back = {
+		left: [(joints.bottom.left[0] + joints.top.left[0]) / 2, joints.bottom.left[1] + Math.sqrt(Math.pow(zAxis.pulley.beltOffset * 2, 2) - Math.pow(( joints.top.left[0] - joints.bottom.left[0]) / 2, 2))],
+		right: [(joints.bottom.right[0] + joints.top.right[0]) / 2, joints.bottom.right[1] + Math.sqrt(Math.pow(zAxis.pulley.beltOffset * 2, 2) - Math.pow(( joints.top.right[0] - joints.bottom.right[0]) / 2, 2))],
+	};
+
+	// bottom and y offset are given
+	// joints.back = {
+	// 	left: [joints.bottom.left[0] + Math.sqrt(Math.pow(zAxis.pulley.beltOffset * 2, 2) - Math.pow(zAxis.beltYOffset, 2)), joints.bottom.left[1] + zAxis.beltYOffset],
+	// 	right: [joints.bottom.right[0] - Math.sqrt(Math.pow(zAxis.pulley.beltOffset * 2, 2) - Math.pow(zAxis.beltYOffset, 2)), joints.bottom.right[1] + zAxis.beltYOffset],
+	// };
 
 	// MOTORS
 	const xzMotorPlane = nema17Width / 2;
@@ -385,7 +397,7 @@ const main = props => {
 		vec2.lerp(centerXY, endA, endB, .5);
 		const center = [...centerXY, xzMotorPlane];
 		// const pulleyPosition = motorBracketThickness + pulleyWidth / 2 + 8;
-		const pulleyPosition = 15;
+		const pulleyPosition = 16;
 
 		const diameter = vec2.length(diagonal) - beltSize.thickness;
 		const pulley = zAxis.pulley ?? PULLEYS.fromOd(diameter);
@@ -407,21 +419,23 @@ const main = props => {
 	vec2.subtract(diagonal, joints.back.left, joints.top.left);
 	const idlerRotation = vec2.angleRadians(diagonal) - Math.PI;
 	const idlerDiameter = vec2.length(diagonal) - beltSize.thickness;
+	const idlerOutsideDiameter = 42.2; // pulley outside diameter
 
 	const idlerExtrusionDistance = 2;
-	const idlerAxisDepth = 5;
-	const zTopHeight = idlerDiameter / 2 + beltSize.thickness + idlerExtrusionDistance + idlerAxisDepth;
+	const idlerAxisDepth = 0;
+	const zTopHeight = idlerOutsideDiameter / 2 + beltSize.thickness + idlerExtrusionDistance + idlerAxisDepth;
 	const xzIdlerPlane = height + zTopHeight - idlerAxisDepth;
 
 	const getIdlerAt = (endA, endB, rotation) => {
-
 		let centerXY = [];
 		vec2.lerp(centerXY, endA, endB, 1/2);
 		const center = [...centerXY, xzIdlerPlane];
 
 		return [
-			translate(center, rotateZ(rotation, rotateX(-Math.PI / 2, getIdler(20, idlerDiameter)))),
-			translate(center, rotateZ(rotation, rotateX(-Math.PI / 2, getIdlerNegative(22.6, idlerDiameter + (2 * beltSize.thickness))))),
+			translate(center, rotateZ(rotation, rotateX(-Math.PI / 2, getPulley({ teeth: 60, od: idlerDiameter }, true)))),
+			// translate(center, rotateZ(rotation, rotateX(-Math.PI / 2, getIdler(20, idlerDiameter)))),
+			// translate(center, rotateZ(rotation, rotateX(-Math.PI / 2, getIdlerNegative(22.6, idlerDiameter + (2 * beltSize.thickness))))),
+			translate(center, rotateZ(rotation, rotateX(-Math.PI / 2, getPulley({ teeth: 60, od: idlerDiameter }, true, true)))),
 			{ translation: center, rotation, radius: idlerDiameter / 2 }
 		];
 	};
@@ -466,32 +480,32 @@ const main = props => {
 		[.7, .7, .7], // XZ1 motor shaft
 		[.3, .3, .3], // XZ1 motor body
 		[.15, .15, .15], // XZ1 motor screws
-		[.3, .3, .3], // XZ1 motor pulley
+		[.7, .7, .7], // XZ1 motor pulley
 	];
 
 	const vWheelColors = [
 		[.8, .8, .8, .9], // wheel
-		// [.2, .2, .2], // bolt
-		[.7, .7, .7], // bolt
+		[.2, .2, .2], // bolt
+		// [.7, .7, .7], // bolt
 		[.3, .3, .3], // nut
 	];
 
 	const carriageWheelColors = [
-			...vWheelColors, // X left bottom v wheel
+		...vWheelColors, // X left bottom v wheel
 
-			...vWheelColors, // X right bottom v wheel
-			...vWheelColors, // X middle v wheel
+		...vWheelColors, // X right bottom v wheel
+		...vWheelColors, // X middle v wheel
 
-			...vWheelColors, // Z top left v wheel
-			...vWheelColors, // Z bottom left v wheel
-			...vWheelColors, // Z top right v wheel
-			...vWheelColors, // Z bottom right v wheel
+		...vWheelColors, // Z top left v wheel
+		...vWheelColors, // Z bottom left v wheel
+		...vWheelColors, // Z top right v wheel
+		...vWheelColors, // Z bottom right v wheel
 	];
 
 	const carriageColors = [
 		...carriageWheelColors,
-		[...mainColor, .8], // carriage back
-		[...mainColor, .8], // carriage front
+		[...mainColor, 1], // carriage back
+		[...mainColor, 1], // carriage front
 
 		...tool.colors,
 		[.2, .2, .2], // X axis,
@@ -502,10 +516,10 @@ const main = props => {
 
 	const zTopColors = [
 		mainColor, // Z top
-		[.2, .2, .2], // Z top left idler
-		[.15, .15, .15], // Z top left idler bolt
-		[.2, .2, .2], // Z top right idler
-		[.15, .15, .15], // Z top right idler bolt
+		[.7, .7, .7], // Z top left idler
+		[.8, .8, .8], // Z top left idler bolt
+		[.7, .7, .7], // Z top right idler
+		[.8, .8, .8], // Z top right idler bolt
 	];
 
 	const zBottomColors = [
@@ -522,6 +536,11 @@ const main = props => {
 
 		[.15, .15, .15], // bolt
 		[.15, .15, .15], // bolt
+
+
+		[.15, .15, .15], // endstop
+		[.8, .8, .8], // endstop
+
 	];
 
 	const zAxisColors = [
@@ -533,28 +552,25 @@ const main = props => {
 	const rotaryAxisColors = [
 		...motorColors, // rotary motor
 
-		mainColor, // base
+		// mainColor, // base
 		[.7, .7, .7], // bed bearing-inner
-		[.7, .7, .7], // bolt
-		[.7, .7, .7], // bolt
-		[.7, .7, .7], // bolt
+		[.8, .8, .8], // bolt
+		[.8, .8, .8], // bolt
+		[.8, .8, .8], // bolt
 
 		[.7, .7, .7], // bed bearing-outer
 
 		[.3, .3, .3], // build plate rim
 		[.9, .9, .9], // build plate mirror
 
-		[.2, .2, .2], // base flap
-		[.2, .2, .2], // z-axis hole
+		// [.2, .2, .2], // base flap
 	];
 	const electronicsColors = [
 		[.15, .15, .15], // bolt
 		[.15, .15, .15], // bolt
-		// [.15, .15, .15], // bolt
-		// [.15, .15, .15], // bolt
 		[.75, .75, .75, .5], // PSU
-		[.4, .2, .2], // mainBoard
-		[.2, .6, .2], // raspberry pi
+		// [.4, .2, .2], // mainBoard
+		// [.2, .6, .2], // raspberry pi
 	];
 	const colors = [
 		...zAxisColors,
@@ -563,7 +579,7 @@ const main = props => {
 		...XZMotorColors, // XY motor 1
 		...XZMotorColors, // XY motor 2
 		...electronicsColors,
-		[.3, .3, .3], // spool
+		// [.3, .3, .3], // spool
 		...rotaryAxisColors,
 	];
 
@@ -576,23 +592,26 @@ const main = props => {
 	const zAxisCenter = [carriagePosition.x, zAxisCenterY, 0];
 	const zAxisCenterCompensation = zAxisCenter.map(value => -value);
 
-												 // inner bearing + psu width
-	const distanceFromZCenterToPSUCenter = {
+
+
+	const PSUPlateThickness = 6;
+	const beltClearance = 4.5;
+	const distanceFromZCenterToPSU = {
 		x: carriagePosition.x - ((340 - 12.5) - 215 / 2),
-		y: zAxisCenterY - ( -135 + 12.5 + 115)
+		y: zAxisCenterY - xAxisCenterY + beltClearance + PSUPlateThickness
 	};
 
-	console.log({distanceFromZCenterToPSUCenter, carriagePosition: carriagePosition.x, PSUCenter: ((340 - 12.5) - 215 / 2)});
+	console.log({distanceFromZCenterToPSU, carriagePosition: carriagePosition.x, PSUCenter: ((340 - 12.5) - 215 / 2)});
 
 	return translate([-100, 0, 6], [
-		translate(zAxisCenter, getZAxis(height, translate(zAxisCenterCompensation, offSetIdlers), zAxis, translatePositions(motorPositions, zAxisCenterCompensation), zTopHeight, distanceFromZCenterToPSUCenter)),
+		translate(zAxisCenter, getZAxis(height, translate(zAxisCenterCompensation, offSetIdlers), zAxis, translatePositions(motorPositions, zAxisCenterCompensation), zTopHeight, distanceFromZCenterToPSU, PSUPlateThickness)),
 		idlers,
 		translate([carriagePosition.x, carriagePosition.y, carriagePosition.z + zPos], getCarriage(wheelPositions, axisSpacing)),
 		translate([xPos - width, xAxisCenterY, carriagePosition.z + zPos], getXAxis(width, xAxis, tool)),
 		belts,
 		motors,
-		getElectronics(buildPlate.center),
-		translate([buildPlate.center.x,  buildPlate.center.y, 0], getSpool(200, 75)),
+		getElectronics(buildPlate.center, beltClearance, PSUPlateThickness),
+		// translate([buildPlate.center.x,  buildPlate.center.y, 0], getSpool(200, 75)),
 		getRotaryHub(delta, xzMotorPlane, buildPlate, joints, zAxis, zAxisCenter),
 		// cuboid({ size: [180, 180, 3], center: [0,0,0]}), // mini bed size
 		// cuboid({ size: [210, 250, 3], center: [0,0,0]}), // mk3s bed size

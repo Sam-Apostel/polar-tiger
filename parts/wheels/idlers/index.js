@@ -5,7 +5,7 @@ const { translateZ, rotateX } = jscad.transforms;
 const { union, subtract } = jscad.booleans;
 const { cylinder } = jscad.primitives;
 
-const smallWidth =  5.4;
+const smallWidth =  6;
 const brimWidth = .5;
 const getIdler = (boltLength, size) => {
 	const bigWidth = smallWidth + ( brimWidth * 2 );
