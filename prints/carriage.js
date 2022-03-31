@@ -1,7 +1,7 @@
 const jscad = require('@jscad/modeling');
-const { translate, rotateX, translateZ, translateY } = jscad.transforms;
-const { subtract, union, intersect } = jscad.booleans;
-const { polygon, ellipse, rectangle, roundedCuboid, cuboid } = jscad.primitives;
+const { translate, rotateX, rotateY, translateZ, translateY } = jscad.transforms;
+const { subtract, union } = jscad.booleans;
+const { polygon, ellipse, rectangle, roundedCuboid, cuboid, cylinder } = jscad.primitives;
 const { offset } = jscad.expansions;
 const { extrudeLinear, extrudeRotate } = jscad.extrusions;
 
@@ -72,15 +72,20 @@ const getCarriage = (wheelPositions, axisSpacing) => {
 			return  translate([translation[0], 0, translation[2]], rotateX(rotation * nubDirection, nub));
 		}));
 
-		const wheelHoles = layer !== 1 ? indexes.map(index => {
+		const wheelHoles = layer === 0 ? indexes.map(index => {
 			const { translation, rotation } = wheelPositions[index];
-			const fullRotation = rotation + Math.PI / 2 * (layer !== 1 ? -1 : 1 );
-			return translate([translation[0], translation[2], 0], rotateX(fullRotation, cuboid({ size: [29, 28, 11 + wheelNubDepth * 2], center: [0, 0, (11 / 2 + wheelNubDepth) + (fullRotation ? 0 : plateThickness)] })));
+			const fullRotation = rotation + Math.PI / -2;
+			return translate([translation[0], translation[2], 0], rotateX(fullRotation,
+				union(
+					cuboid({ size: [29, 14 + 2, 11 + wheelNubDepth * 2], center: [0, 2 / 2 * ([6,4].includes(index) ? -1 : 1), (11 / 2 + wheelNubDepth) + plateThickness] }),
+					translate([0, 14 / 2 * ([6,4].includes(index) ? 1 : -1), (11 / 2 + wheelNubDepth) + plateThickness], rotateY(Math.PI / 2, cylinder({ radius: (11 + wheelNubDepth * 2) / 2, height: 100 })))
+				)
+			));
 		}) : [];
 
 		return subtract(
 				union(
-					translateY( yOffset + plateThickness / 2, rotateX( Math.PI / 2,
+					translateY(yOffset + plateThickness / 2, rotateX( Math.PI / 2,
 						subtract(
 							block,
 							wheelHoles
@@ -97,9 +102,6 @@ const getCarriage = (wheelPositions, axisSpacing) => {
 	const xPlate = getPlate(xWheel, -extrusionDepth - axisSpacing, 2);
 
 	const zBlock = union(middlePlate, zPlate);
-	// const seperator = translateZ(100, cuboid({ size: [200, 200, 200] }));
-	// const zBlockTop = intersect(zBlock, seperator);
-	// const zBlockBottom = subtract(zBlock, seperator);
 
 	return [
 		wheels,
