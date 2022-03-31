@@ -397,7 +397,7 @@ const main = props => {
 		vec2.lerp(centerXY, endA, endB, .5);
 		const center = [...centerXY, xzMotorPlane];
 		// const pulleyPosition = motorBracketThickness + pulleyWidth / 2 + 8;
-		const pulleyPosition = 16;
+		const pulleyPosition = 18;
 
 		const diameter = vec2.length(diagonal) - beltSize.thickness;
 		const pulley = zAxis.pulley ?? PULLEYS.fromOd(diameter);
@@ -422,7 +422,7 @@ const main = props => {
 	const idlerOutsideDiameter = 42.2; // pulley outside diameter
 
 	const idlerExtrusionDistance = 2;
-	const idlerAxisDepth = 0;
+	const idlerAxisDepth = 5;
 	const zTopHeight = idlerOutsideDiameter / 2 + beltSize.thickness + idlerExtrusionDistance + idlerAxisDepth;
 	const xzIdlerPlane = height + zTopHeight - idlerAxisDepth;
 
