@@ -34,10 +34,10 @@ const getNema17WithPulley = (pulleySize, pulleyPosition) => {
 	];
 };
 
-const getZAxis = (height, offsetIdlers, zAxisProfile, motorPositions, zTopHeight, distanceToPSU, PSUPlateThickness) => {
+const getZAxis = (height, offsetIdlers, zAxisProfile, motorPositions, zTopHeight, distanceToPSU, PSUPlateThickness, bedCenter) => {
 	const zAxis = getExtrusion(height, zAxisProfile.depth, zAxisProfile.width);
 	const topBracket = getZTopIdler(zTopHeight, translateZ(-((zTopHeight / 2) + height), offsetIdlers), zAxisProfile);
-	const bottomBracket = getMotorBracket(motorPositions, distanceToPSU, zAxisProfile, PSUPlateThickness);
+	const bottomBracket = getMotorBracket(motorPositions, distanceToPSU, zAxisProfile, PSUPlateThickness, bedCenter);
 	return [
 		bottomBracket,
 		zAxis,
@@ -604,7 +604,7 @@ const main = props => {
 	console.log({distanceFromZCenterToPSU, carriagePosition: carriagePosition.x, PSUCenter: ((340 - 12.5) - 215 / 2)});
 
 	return translate([-100, 0, 6], [
-		translate(zAxisCenter, getZAxis(height, translate(zAxisCenterCompensation, offSetIdlers), zAxis, translatePositions(motorPositions, zAxisCenterCompensation), zTopHeight, distanceFromZCenterToPSU, PSUPlateThickness)),
+		translate(zAxisCenter, getZAxis(height, translate(zAxisCenterCompensation, offSetIdlers), zAxis, translatePositions(motorPositions, zAxisCenterCompensation), zTopHeight, distanceFromZCenterToPSU, PSUPlateThickness, zAxisCenterCompensation)),
 		idlers,
 		translate([carriagePosition.x, carriagePosition.y, carriagePosition.z + zPos], getCarriage(wheelPositions, axisSpacing)),
 		translate([xPos - width, xAxisCenterY, carriagePosition.z + zPos], getXAxis(width, xAxis, tool)),
