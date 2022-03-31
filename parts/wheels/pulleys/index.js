@@ -45,8 +45,10 @@ const getPulley60T = (asIdler, negative) => {
 
 	if (asIdler && negative) {
 		return union(
-			myCylinder(bigWidth + .8, bigRadius + .4),
+			myCylinder(bigWidth + 1, bigRadius + 1, undefined, 512),
 			translateZ(-(bigWidth + 6) / 2, myCylinder(6 + .8, 25 / 2 + .4)),
+			translateZ((30 - bigWidth) / 2 - 6 - 2.7, getSocketScrew(BOLT_TYPES.M5 + .3, 37, {diameter: 9.7, height: 3.6, smallDiameter: 4.7})),
+			translateZ(10, cylinder({ radius: 6.4 / 2, height: 10 }))
 			// todo: bearing
 		);
 	}
