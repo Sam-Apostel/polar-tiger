@@ -315,7 +315,7 @@ const main = props => {
 	};
 
 	const wheelRadialOffset = 10.5;
-	const xWheelSpread = 85;
+	const xWheelSpread = 95;
 	const zWheelSpread = 60;
 	const zWheelOffset = 10;
 	const width = buildPlate.radius + xWheelSpread + wheelRadius - tool.mount.x + zAxis.bedClearance + zAxis.xAxis.extraLength;
