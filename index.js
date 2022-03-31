@@ -314,10 +314,10 @@ const main = props => {
 		z: xAxis.width
 	};
 
-	const wheelRadialOffset = 10;
-	const xWheelSpread = 95;
-	const zWheelSpread = 80;
-	const zWheelOffset = 20;
+	const wheelRadialOffset = 10.5;
+	const xWheelSpread = 85;
+	const zWheelSpread = 60;
+	const zWheelOffset = 10;
 	const width = buildPlate.radius + xWheelSpread + wheelRadius - tool.mount.x + zAxis.bedClearance + zAxis.xAxis.extraLength;
 
 	const carriagePosition = {
