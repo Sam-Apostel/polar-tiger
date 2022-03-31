@@ -252,7 +252,6 @@ const zAxi = {
 	2020: {
 		width: 20,
 		depth: 20,
-		beltOffset: [12.5, 13],
 		threads: [{ x: 0 , y: 0 }],
 		pulley: PULLEYS[40],
 		bedClearance: 0
@@ -260,20 +259,11 @@ const zAxi = {
 	2040: {
 		width: 40,
 		depth: 20,
-		// beltOffset: [3, 0],
-		// beltOffset: [10, 8],
-		// beltOffset: [19, 17],
-
-		// beltOffset: [13, 17],
-		beltOffset: [22, 18],
 		pulley: PULLEYS[60],
-		// pulleyAngle: 15,
-		beltYOffset: PULLEYS[60].beltOffset * 2 - .4,
 
 		threads: [{ x: -10 , y: 0 }, { x: 10 , y: 0 }],
 		bedClearance: 15,
-		// bottomClearance: 25,
-		bottomClearance: 15,
+		bottomClearance: 5,
 		xAxis: {
 			extraLength: 15,
 		}
@@ -281,7 +271,6 @@ const zAxi = {
 	2060: {
 		width: 60,
 		depth: 20,
-		beltOffset: [10, 0],
 		threads: [{ x: -20 , y: 0 }, { x: 0 , y: 0 }, { x: 20 , y: 0 }],
 		pulley: PULLEYS[40],
 		bedClearance: 0
@@ -307,12 +296,23 @@ const main = props => {
 	const axisSpacing = 1;
 
 	const wheelAxialOffset = (xAxis.depth + axisSpacing) / 2;
-	const buildPlate = { radius, height: 4, center: { x: 0, y: 0, z: 8 + 4 + nema17Width + zAxis.bottomClearance } }
+	const buildPlate = {
+		radius,
+		height: 4,
+		center: {
+			x: 0,
+			y: 0,
+			z: 8 + 4 + nema17Width + zAxis.bottomClearance
+		}
+	};
 	const xAxisCenterY = buildPlate.center.y - tool.mount.y / 2;
 	const zAxisCenterY = xAxisCenterY + axisSpacing + xAxis.depth;
 
 
-	const carriageSize = {x: zAxis.width, z: xAxis.width};
+	const carriageSize = {
+		x: zAxis.width,
+		z: xAxis.width
+	};
 
 	const wheelRadialOffset = 10;
 	const xWheelSpread = 95;
@@ -504,8 +504,8 @@ const main = props => {
 
 	const carriageColors = [
 		...carriageWheelColors,
-		[...mainColor, 1], // carriage back
-		[...mainColor, 1], // carriage front
+		mainColor, // carriage back
+		mainColor, // carriage front
 
 		...tool.colors,
 		[.2, .2, .2], // X axis,
@@ -601,8 +601,6 @@ const main = props => {
 		y: zAxisCenterY - xAxisCenterY + beltClearance + PSUPlateThickness
 	};
 
-	console.log({distanceFromZCenterToPSU, carriagePosition: carriagePosition.x, PSUCenter: ((340 - 12.5) - 215 / 2)});
-
 	return translate([-100, 0, 6], [
 		translate(zAxisCenter, getZAxis(height, translate(zAxisCenterCompensation, offSetIdlers), zAxis, translatePositions(motorPositions, zAxisCenterCompensation), zTopHeight, distanceFromZCenterToPSU, PSUPlateThickness, zAxisCenterCompensation)),
 		idlers,
@@ -611,10 +609,7 @@ const main = props => {
 		belts,
 		motors,
 		getElectronics(buildPlate.center, beltClearance, PSUPlateThickness),
-		// translate([buildPlate.center.x,  buildPlate.center.y, 0], getSpool(200, 75)),
 		getRotaryHub(delta, xzMotorPlane, buildPlate, joints, zAxis, zAxisCenter),
-		// cuboid({ size: [180, 180, 3], center: [0,0,0]}), // mini bed size
-		// cuboid({ size: [210, 250, 3], center: [0,0,0]}), // mk3s bed size
 	])
 		.map((object, index) => {
 			return object.color ? object : colorize(colors[index] || [0, 0, 0], object)
