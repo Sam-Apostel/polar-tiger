@@ -523,7 +523,11 @@ const main = props => {
 	];
 
 	const zBottomColors = [
-		mainColor, // Z bottom motor mount
+		[.2, .2, .2], // Z bottom motor mount a
+		// mainColor, // Z bottom motor mount b
+		mainColor, // Z bottom PSU mount
+		mainColor, // Z bottom backplate
+
 		[.15, .15, .15], // bolt
 		[.15, .15, .15], // bolt
 		[.15, .15, .15], // bolt
