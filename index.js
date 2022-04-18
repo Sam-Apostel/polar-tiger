@@ -314,7 +314,7 @@ const main = props => {
 		z: xAxis.width
 	};
 
-	const wheelRadialOffset = 10.5;
+	const wheelRadialOffset = 10.25;
 	const xWheelSpread = 95;
 	const zWheelSpread = 60;
 	const zWheelOffset = 10;
@@ -487,7 +487,7 @@ const main = props => {
 		[.8, .8, .8, .9], // wheel
 		[.2, .2, .2], // bolt
 		// [.7, .7, .7], // bolt
-		[.3, .3, .3], // nut
+		[.7, .4, .2], // nut
 	];
 
 	const carriageWheelColors = [

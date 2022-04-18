@@ -5,7 +5,7 @@ const { translateZ, rotateX } = jscad.transforms;
 const { union, subtract } = jscad.booleans;
 const { cylinder } = jscad.primitives;
 
-const getVWheel = (boltLength, boltPosition, negative) => {
+const getVWheel = (boltLength, boltPosition, nutPosition, negative) => {
 	const bigWidth = 11;
 	const smallWidth =  5.89;
 	const cornerWidth = (bigWidth - smallWidth) / 2;
@@ -28,25 +28,23 @@ const getVWheel = (boltLength, boltPosition, negative) => {
 			cylinder({radius: (BOLT_TYPES.M5 + .4) / 2 , height: nutSize, segments: 32}),
 		);
 
-	const heatedInsetSize = 9.5
+	const heatedInsetSize = 5.34;
 	const heatedInsert = negative
-		? cylinder({ radius: 3.1, height: heatedInsetSize })
+		? cylinder({ radius: 3.15, height: heatedInsetSize })
 		: subtract(
-			cylinder({ radius: 3.1, height: heatedInsetSize }),
+			cylinder({ radius: 3.2, height: heatedInsetSize }),
 			cylinder({radius: (BOLT_TYPES.M5 + .4) / 2 , height: heatedInsetSize, segments: 32})
 		);
 
-	const bolt = rotateX(Math.PI, getBolt(BOLT_TYPES.M5 + .4, boltLength, { diameter: 8.5, height: 5 }));
+	const bolt = rotateX(Math.PI, getBolt(BOLT_TYPES.M5 + .4, boltLength, { diameter: 8.65, height: 5 }));
 
 	return ( [
-		wheelOutside,
-		...translateZ(1.5,
-			[
-				translateZ(boltPosition, bolt),
-				translateZ((boltLength - nutSize + (negative ? negativeNutOffset : 0)) / 2 + boltPosition, nut),
-				// translateZ((boltLength - heatedInsetSize + (negative ? 2 : 0)) / 2 + boltPosition, heatedInsert),
-			]
-		)
+		// wheelOutside,
+		[
+			translateZ(boltPosition, bolt),
+			// translateZ((boltLength - nutSize + (negative ? negativeNutOffset : 0)) / 2 + boltPosition, nut),
+			translateZ((nutPosition - (heatedInsetSize / 2)), heatedInsert),
+		]
 	]);
 };
 

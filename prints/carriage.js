@@ -1,7 +1,7 @@
 const jscad = require('@jscad/modeling');
-const { translate, rotateX, rotateY, translateZ, translateY } = jscad.transforms;
+const { translate, rotateX, rotateY, rotateZ, translateZ, translateY } = jscad.transforms;
 const { subtract, union } = jscad.booleans;
-const { polygon, ellipse, rectangle, roundedCuboid, cuboid, cylinder } = jscad.primitives;
+const { polygon, ellipse, rectangle, roundedCuboid, cuboid, cylinder, sphere } = jscad.primitives;
 const { offset } = jscad.expansions;
 const { extrudeLinear, extrudeRotate } = jscad.extrusions;
 
@@ -11,11 +11,16 @@ const getCarriage = (wheelPositions, axisSpacing) => {
 	const plateThickness = 6;
 	const extrusionSpacing = 2;
 	const boltLength = 20;
+	const extrusionDepth = 20;
+	const boltPosition = -((plateThickness - 4.5) + (axisSpacing - 2.5)) / 2 + 1.5;
+	const nutPosition = (extrusionDepth + plateThickness + extrusionSpacing / 2) / 2;
+	const heatedInsetSize = 5.34;
+	const vWheelThickness = 11;
 
-	const wheel = getVWheel(boltLength, -((plateThickness - 4.5) + (axisSpacing - 2.5)) / 2);
-	const altWheel = getVWheel(boltLength, -((plateThickness - 4.5) + (axisSpacing - 2.5)) / 2 - 1.5);
-	const negativeWheel = getVWheel(boltLength, -((plateThickness - 4.5) + (axisSpacing - 2.5)) / 2, true);
-	const negativeAltWheel = getVWheel(boltLength, -((plateThickness - 4.5) + (axisSpacing - 2.5)) / 2 - 1.5, true);
+	const wheel = getVWheel(boltLength, boltPosition, nutPosition);
+	const negativeWheel = getVWheel(boltLength, boltPosition, nutPosition, true);
+	const altWheel = getVWheel(boltLength, boltPosition - 1.5, heatedInsetSize + vWheelThickness / 2);
+	const negativeAltWheel = getVWheel(boltLength, boltPosition - 1.5, heatedInsetSize + vWheelThickness / 2, true);
 
 	const wheels = wheelPositions.map(({ translation, rotation }, index) => translate(translation, rotateX(rotation, index === 2 ? altWheel : wheel )));
 	const negativeWheels = wheelPositions.map(({ translation, rotation }, index) => translate(translation, rotateX(rotation, index === 2 ? negativeAltWheel : negativeWheel )));
@@ -27,21 +32,43 @@ const getCarriage = (wheelPositions, axisSpacing) => {
 	const brimSize = 9;
 	const brimInnerCornerRadius = 4;
 
-
-
-	const extrusionDepth = 20;
-	const vWheelThickness = 11;
 	const wheelNubDepth = (extrusionDepth - vWheelThickness - plateThickness + axisSpacing) / 2;
 
+	const aDiagonal = edgeLength => Math.sqrt(edgeLength * edgeLength / 2);
+
+	const getEndStop = () => {
+		return [
+			cuboid({ size: [6.6, 20, 10.5]}),
+			translate([0, -16.5 / 2, 10.5 / 2], rotateX(Math.PI / 12, cuboid({ size: [4, 16.5, .4], center: [0, 16.5 / 2, 0] })))
+		];
+	}
+
+	const endstopNegative = translate([-40 + 4.5 / 2, (plateThickness + 7) / 2, 6], rotateY(-Math.PI / 2, rotateZ(Math.PI / 2,
+		subtract(
+			cuboid({ size: [6.6 + .4, 20 + .4, 15]}),
+			sphere({ radius: 2.5 / 2 - .2, center: [(6.6 + .4 + .8) / 2, 20 / 2 - 3.85, 15 / 2 - 7.75] }),
+			sphere({ radius: 2.5 / 2 - .2, center: [(6.6 + .4 + .8) / 2, -(20 / 2 - 3.85), 15 / 2 - 7.75] }),
+			sphere({ radius: 2.5 / 2 - .2, center: [-(6.6 + .4 + .8) / 2, 20 / 2 - 3.85, 15 / 2 - 7.75] }),
+			sphere({ radius: 2.5 / 2 - .2, center: [-(6.6 + .4 + .8) / 2, -(20 / 2 - 3.85), 15 / 2 - 7.75] }),
+		)
+	)));
 
 	const negative = union(
 		...negativeWheels,
-		roundedCuboid({ size: [200, 20 + extrusionSpacing, 20 + extrusionSpacing], center: [0, -10 - axisSpacing / 2, 0], roundRadius: 3, segments: 16 }),
+		endstopNegative,
+
+		// z-axis
 		roundedCuboid({ size: [40 + extrusionSpacing, 20 + extrusionSpacing, 200], center: [0, 10 + axisSpacing / 2, 0], roundRadius: 3, segments: 16 }),
+
+		// x-axis
+		roundedCuboid({ size: [200, 20 + extrusionSpacing, 20 + extrusionSpacing - 2], center: [0, -10 - axisSpacing / 2, -2 / 2], roundRadius: 3, segments: 16 }), // rounded hole (bottom)
+		cuboid({ size: [200, 20 + extrusionSpacing, 5], center: [0, -10 - axisSpacing / 2, (20 + extrusionSpacing - 5) / 2 - 2] }), // square hole (top)
+		translate([0, -10 - axisSpacing / 2, (20 + extrusionSpacing) / 2 - 2], rotateX(Math.PI / 4, cuboid({ size: [200, aDiagonal(20 + extrusionSpacing), aDiagonal(20 + extrusionSpacing)] }))), // diagonal (top)
+
 	);
 
-	const wheelNubContactRadius = 4.5;
-	const nubSpread = 4.5
+	const wheelNubContactRadius = 4.4;
+	const nubSpread = 4.5;
 	const nub = translateZ((plateThickness + (wheelNubDepth)) / 2, extrudeRotate({ segments: 32 },
 		subtract(
 			rectangle({size: [wheelNubContactRadius + nubSpread, wheelNubDepth], center: [(wheelNubContactRadius + nubSpread) / 2, 0]}),
@@ -77,20 +104,20 @@ const getCarriage = (wheelPositions, axisSpacing) => {
 			const fullRotation = rotation + Math.PI / -2;
 			return translate([translation[0], translation[2], 0], rotateX(fullRotation,
 				union(
-					cuboid({ size: [29, 14 + 2, 11 + wheelNubDepth * 2], center: [0, 2 / 2 * ([6,4].includes(index) ? -1 : 1), (11 / 2 + wheelNubDepth) + plateThickness] }),
-					translate([0, 14 / 2 * ([6,4].includes(index) ? 1 : -1), (11 / 2 + wheelNubDepth) + plateThickness], rotateY(Math.PI / 2, cylinder({ radius: (11 + wheelNubDepth * 2) / 2, height: 100 })))
+					cuboid({ size: [29, 14 + 2, vWheelThickness + (wheelNubDepth * 2)], center: [0, 2 / 2 * ([6,4].includes(index) ? -1 : 1), (vWheelThickness / 2) + wheelNubDepth + plateThickness] }),
+					translate([0, 14 / 2 * ([6,4].includes(index) ? 1 : -1), (vWheelThickness / 2) + wheelNubDepth + plateThickness], rotateY(Math.PI / 2, cylinder({ radius: (vWheelThickness / 2) + wheelNubDepth, height: 100 })))
 				)
 			));
 		}) : [];
 
 		return subtract(
-				union(
-					translateY(yOffset + plateThickness / 2, rotateX( Math.PI / 2,
-						subtract(
-							block,
-							wheelHoles
-						)
-					)),
+			union(
+				translateY(yOffset + plateThickness / 2, rotateX( Math.PI / 2,
+					subtract(
+						block,
+						wheelHoles
+					)
+				)),
 				nubs
 			),
 			negative
@@ -107,6 +134,7 @@ const getCarriage = (wheelPositions, axisSpacing) => {
 		wheels,
 		zBlock,
 		xPlate,
+		// translate([-40, (plateThickness + 7) / 2, 6], rotateY(-Math.PI / 2, rotateZ(Math.PI / 2, getEndStop())))
 	];
 };
 
