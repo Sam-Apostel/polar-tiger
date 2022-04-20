@@ -45,11 +45,11 @@ const getCarriage = (wheelPositions, axisSpacing) => {
 
 	const endstopNegative = translate([-40 + 4.5 / 2, (plateThickness + 7) / 2, 6], rotateY(-Math.PI / 2, rotateZ(Math.PI / 2,
 		subtract(
-			cuboid({ size: [6.6 + .4, 20 + .4, 15]}),
-			sphere({ radius: 2.5 / 2 - .2, center: [(6.6 + .4 + .8) / 2, 20 / 2 - 3.85, 15 / 2 - 7.75] }),
-			sphere({ radius: 2.5 / 2 - .2, center: [(6.6 + .4 + .8) / 2, -(20 / 2 - 3.85), 15 / 2 - 7.75] }),
-			sphere({ radius: 2.5 / 2 - .2, center: [-(6.6 + .4 + .8) / 2, 20 / 2 - 3.85, 15 / 2 - 7.75] }),
-			sphere({ radius: 2.5 / 2 - .2, center: [-(6.6 + .4 + .8) / 2, -(20 / 2 - 3.85), 15 / 2 - 7.75] }),
+			cuboid({ size: [6.6 + .4, 20 + 1, 15]}),
+			sphere({ radius: 2.5 / 2 - .2, center: [(6.6 + .4 + .8) / 2, 8.6 / 2, 15 / 2 - 7.75] }),
+			sphere({ radius: 2.5 / 2 - .2, center: [(6.6 + .4 + .8) / 2, -8.6 / 2, 15 / 2 - 7.75] }),
+			sphere({ radius: 2.5 / 2 - .2, center: [-(6.6 + .4 + .8) / 2, 8.6 / 2, 15 / 2 - 7.75] }),
+			sphere({ radius: 2.5 / 2 - .2, center: [-(6.6 + .4 + .8) / 2, -8.6 / 2, 15 / 2 - 7.75] }),
 		)
 	)));
 
@@ -58,10 +58,10 @@ const getCarriage = (wheelPositions, axisSpacing) => {
 		endstopNegative,
 
 		// z-axis
-		roundedCuboid({ size: [40 + extrusionSpacing, 20 + extrusionSpacing, 200], center: [0, 10 + axisSpacing / 2, 0], roundRadius: 3, segments: 16 }),
+		roundedCuboid({ size: [40 + extrusionSpacing, 20 + extrusionSpacing, 200], center: [0, 10 + axisSpacing / 2, 0], roundRadius: 2, segments: 16 }),
 
 		// x-axis
-		roundedCuboid({ size: [200, 20 + extrusionSpacing, 20 + extrusionSpacing - 2], center: [0, -10 - axisSpacing / 2, -2 / 2], roundRadius: 3, segments: 16 }), // rounded hole (bottom)
+		roundedCuboid({ size: [200, 20 + extrusionSpacing, 20 + extrusionSpacing - 2], center: [0, -10 - axisSpacing / 2, -2 / 2], roundRadius: 2, segments: 16 }), // rounded hole (bottom)
 		cuboid({ size: [200, 20 + extrusionSpacing, 5], center: [0, -10 - axisSpacing / 2, (20 + extrusionSpacing - 5) / 2 - 2] }), // square hole (top)
 		translate([0, -10 - axisSpacing / 2, (20 + extrusionSpacing) / 2 - 2], rotateX(Math.PI / 4, cuboid({ size: [200, aDiagonal(20 + extrusionSpacing), aDiagonal(20 + extrusionSpacing)] }))), // diagonal (top)
 
@@ -127,8 +127,19 @@ const getCarriage = (wheelPositions, axisSpacing) => {
 	const zPlate = getPlate(zWheels, axisSpacing + extrusionDepth, 0);
 	const middlePlate = getPlate(wheelPositionsSorted, 0, 1);
 	const xPlate = getPlate(xWheel, -extrusionDepth - axisSpacing, 2);
-
-	const zBlock = union(middlePlate, zPlate);
+	const zEndstopLength = 6;
+	const m3HeatedInsertSize = {
+		radius: 2,
+		height: 6.3
+	}
+	const zEndstopTrigger = translate([0, axisSpacing + extrusionDepth + plateThickness / 2, wheelPositions[0].translation[2] - brimSize + m3HeatedInsertSize.height / 2], subtract(
+		union(
+			cylinder({ radius: m3HeatedInsertSize.radius + 1.6, height: m3HeatedInsertSize.height, center: [0, zEndstopLength, 0] }),
+			cuboid({ size: [(m3HeatedInsertSize.radius + 1.6) * 2, zEndstopLength, m3HeatedInsertSize.height], center: [0, zEndstopLength / 2, 0]})
+		),
+		cylinder({ radius: m3HeatedInsertSize.radius, height: m3HeatedInsertSize.height, center: [0, zEndstopLength, 0] })
+	));
+	const zBlock = union(middlePlate, zPlate, zEndstopTrigger);
 
 	return [
 		wheels,
