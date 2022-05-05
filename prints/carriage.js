@@ -17,17 +17,21 @@ const getCarriage = (wheelPositions, axisSpacing) => {
 	const heatedInsetSize = 5.34;
 	const vWheelThickness = 11;
 
-	const wheel = getVWheel(boltLength, boltPosition, nutPosition);
-	const negativeWheel = getVWheel(boltLength, boltPosition, nutPosition, true);
-	const altWheel = getVWheel(boltLength, boltPosition - 1.5, heatedInsetSize + vWheelThickness / 2);
-	const negativeAltWheel = getVWheel(boltLength, boltPosition - 1.5, heatedInsetSize + vWheelThickness / 2, true);
+	const getWheel = (alt = false, negative = false, stretched = false) => {
+		return getVWheel(
+			boltLength,
+			boltPosition + ( alt ? -1.5 : 0),
+			alt ? heatedInsetSize + vWheelThickness / 2 : nutPosition,
+			stretched ? 1.036 : 1,
+			negative
+		);
+	}
 
-	const wheels = wheelPositions.map(({ translation, rotation }, index) => translate(translation, rotateX(rotation, index === 2 ? altWheel : wheel )));
-	const negativeWheels = wheelPositions.map(({ translation, rotation }, index) => translate(translation, rotateX(rotation, index === 2 ? negativeAltWheel : negativeWheel )));
+	const getWheels = (negative = false, stretched = false) => wheelPositions.map(({ translation, rotation }, index) => translate(translation, rotateX(rotation, getWheel(index === 2, negative, stretched))));
 
 	const wheelPositionsSorted = [6, 1, 5, 2, 3, 0, 4];
 	const zWheels = [6, 5, 3, 4];
-	const xWheel = [1, 2, 0];
+	const xWheels = [1, 2, 0];
 
 	const brimSize = 9;
 	const brimInnerCornerRadius = 4;
@@ -53,8 +57,8 @@ const getCarriage = (wheelPositions, axisSpacing) => {
 		)
 	)));
 
-	const negative = union(
-		...negativeWheels,
+	const getNegative = layer => union(
+		...getWheels(true, layer !== 2),
 		endstopNegative,
 
 		// z-axis
@@ -120,29 +124,33 @@ const getCarriage = (wheelPositions, axisSpacing) => {
 				)),
 				nubs
 			),
-			negative
+			getNegative(layer)
 		);
 	}
 
 	const zPlate = getPlate(zWheels, axisSpacing + extrusionDepth, 0);
 	const middlePlate = getPlate(wheelPositionsSorted, 0, 1);
-	const xPlate = getPlate(xWheel, -extrusionDepth - axisSpacing, 2);
-	const zEndstopLength = 6;
+	const xPlate = getPlate(xWheels, -extrusionDepth - axisSpacing, 2);
+	const zEndstopLength = 4;
 	const m3HeatedInsertSize = {
 		radius: 2,
 		height: 6.3
 	}
-	const zEndstopTrigger = translate([0, axisSpacing + extrusionDepth + plateThickness / 2, wheelPositions[0].translation[2] - brimSize + m3HeatedInsertSize.height / 2], subtract(
+	const bottomOffset = 1.5;
+	const zEndstopTrigger = translate([0, axisSpacing + extrusionDepth + plateThickness / 2, wheelPositions[0].translation[2] - brimSize + m3HeatedInsertSize.height / 2 + bottomOffset], subtract(
 		union(
 			cylinder({ radius: m3HeatedInsertSize.radius + 1.6, height: m3HeatedInsertSize.height, center: [0, zEndstopLength, 0] }),
 			cuboid({ size: [(m3HeatedInsertSize.radius + 1.6) * 2, zEndstopLength, m3HeatedInsertSize.height], center: [0, zEndstopLength / 2, 0]})
 		),
 		cylinder({ radius: m3HeatedInsertSize.radius, height: m3HeatedInsertSize.height, center: [0, zEndstopLength, 0] })
 	));
-	const zBlock = union(middlePlate, zPlate, zEndstopTrigger);
+	const zBlock = subtract(
+		union(middlePlate, zPlate, zEndstopTrigger),
+		cuboid({ size: [1000, 1000, bottomOffset], center: [0, 0, wheelPositions[0].translation[2] - brimSize + (bottomOffset / 2)]})
+	);
 
 	return [
-		wheels,
+		// getWheels(),
 		zBlock,
 		xPlate,
 		// translate([-40, (plateThickness + 7) / 2, 6], rotateY(-Math.PI / 2, rotateZ(Math.PI / 2, getEndStop())))

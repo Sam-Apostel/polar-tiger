@@ -314,7 +314,7 @@ const main = props => {
 		z: xAxis.width
 	};
 
-	const wheelRadialOffset = 10.5;
+	const wheelRadialOffset = 10.35;
 	const xWheelSpread = 95;
 	const zWheelSpread = 60;
 	const zWheelOffset = (zWheelSpread - carriageSize.z) / 2 - wheelRadialOffset;
@@ -487,7 +487,8 @@ const main = props => {
 		[.8, .8, .8, .9], // wheel
 		[.2, .2, .2], // bolt
 		// [.7, .7, .7], // bolt
-		[.7, .4, .2], // nut
+		// [.2, .2, .2], // nut
+		[.7, .4, .2], // heated insert
 	];
 
 	const carriageWheelColors = [
@@ -502,10 +503,16 @@ const main = props => {
 		...vWheelColors, // Z bottom right v wheel
 	];
 
+	const endstopColors = [
+		[.15, .15, .15],
+		[.8, .8, .8],
+	];
+
 	const carriageColors = [
 		...carriageWheelColors,
 		mainColor, // carriage back
 		mainColor, // carriage front
+		...endstopColors,
 
 		...tool.colors,
 		[.2, .2, .2], // X axis,
@@ -542,8 +549,8 @@ const main = props => {
 		[.15, .15, .15], // bolt
 
 
-		[.15, .15, .15], // endstop
-		[.8, .8, .8], // endstop
+		...endstopColors,
+		// mainColor // bed stem
 
 	];
 

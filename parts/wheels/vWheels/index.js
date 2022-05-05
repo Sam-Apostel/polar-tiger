@@ -1,11 +1,11 @@
 const jscad = require('@jscad/modeling');
 const { getBolt, BOLT_TYPES } = require("../../bolts");
 const { myCylinder } = require("../../../utils/geometry");
-const { translateZ, rotateX } = jscad.transforms;
+const { translateZ, rotateX, scaleY } = jscad.transforms;
 const { union, subtract } = jscad.booleans;
 const { cylinder } = jscad.primitives;
 
-const getVWheel = (boltLength, boltPosition, nutPosition, negative) => {
+const getVWheel = (boltLength, boltPosition, nutPosition, stretchZ = 1, negative) => {
 	const bigWidth = 11;
 	const smallWidth =  5.89;
 	const cornerWidth = (bigWidth - smallWidth) / 2;
@@ -36,15 +36,15 @@ const getVWheel = (boltLength, boltPosition, nutPosition, negative) => {
 			cylinder({radius: (BOLT_TYPES.M5 + .4) / 2 , height: heatedInsetSize, segments: 32})
 		);
 
-	const bolt = rotateX(Math.PI, getBolt(BOLT_TYPES.M5 + .4, boltLength, { diameter: 8.65, height: 5 }));
+	const bolt = rotateX(Math.PI, getBolt(BOLT_TYPES.M5 + .4, boltLength, { diameter: 8.45 + (negative ? .25 : 0), height: 5 }));
 
 	return ( [
-		// wheelOutside,
-		[
+		wheelOutside,
+		scaleY(stretchZ, [
 			translateZ(boltPosition, bolt),
 			// translateZ((boltLength - nutSize + (negative ? negativeNutOffset : 0)) / 2 + boltPosition, nut),
 			translateZ((nutPosition - (heatedInsetSize / 2)), heatedInsert),
-		]
+		])
 	]);
 };
 
